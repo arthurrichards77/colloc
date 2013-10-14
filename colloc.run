@@ -1,0 +1,27 @@
+model colloc.mod;
+data colloc.dat;
+data colloc2.dat;
+if Npold>0 then data yguess.dat;
+
+option solver ipopt;
+option ipopt_options 'halt_on_ampl_error yes print_level 5';
+
+# only 2D for now
+fix{cc in 1..Nc, ff in 1..Nf, aa in 1..Na} zc[3,cc,ff,aa];
+fix{pp in 1..Np, e1 in 2..Ne, f1 in 1..Nf, e2 in 2..Ne, f2 in 1..Nf} ye[pp,e1,f1,e2,f2,3];
+
+#fix ye;
+
+solve;
+
+# multi vehicle result files
+printf{aa in 1..Na, ff in 1..Nf, cc in 1..Nc} "%f %f %f\n", zc[1,cc,ff,aa], zc[2,cc,ff,aa], zc[3,cc,ff,aa] > zc.dat;
+printf{aa in 1..Na, ff in 1..Nf, ee in 1..Ne: ff=1 or ee>1} "%f %f %f\n", sum{cc in 1..Nc} E[ee,cc]*zc[1,cc,ff,aa], sum{cc in 1..Nc} E[ee,cc]*zc[2,cc,ff,aa], sum{cc in 1..Nc} E[ee,cc]*zc[3,cc,ff,aa] > ze.dat;
+printf{aa in 1..Na} "%f\n", tau[aa] > tau.dat;
+printf{aa in 1..Na, ff in 1..Nf} "%f\n", tel[aa,ff] > tel.dat;
+printf "%f", R > R.dat;
+
+display tel,tau;
+
+printf "param guess" > yguess.dat;
+display ye >> yguess.dat;
