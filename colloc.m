@@ -5,6 +5,9 @@ clc
 % start the clock
 tic
 
+%% %%%%%%%%%%%%%% build the model file %%%%%%%%%%%%%%%
+!runcpp colloc.mot colloc.mod
+
 %% %%%%%%%%%%%%%% set problem data %%%%%%%%%%%%%%%%
 
 % max speed
