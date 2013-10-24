@@ -152,8 +152,7 @@ end
 
 % initialize list of pairs
 [ix,jx]=find(avoidEnf);
-avoidPairs = [ix jx;
-    0 0]; % always zero bottom row to avoid empty matrix
+avoidPairs = [ix jx];
 
 %% %%%%%%%%%%%%%% write global AMPL file %%%%%%%%%%%%%%%%
 
@@ -197,9 +196,8 @@ for iter = 1:10,
     % warning - doing it here could change the order and screw up the
     % initialization of the "y" values
     
-%     [ix,jx]=find(avoidEnf);
-%     avoidPairs = [ix jx;
-%         0 0]; % always zero bottom row to avoid empty matrix
+    %     [ix,jx]=find(avoidEnf);
+    %     avoidPairs = [ix jx];
     
     %% %%%%%%%%%%%%%%% write local AMPL file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
@@ -230,12 +228,16 @@ for iter = 1:10,
     c = c + AMPLvector(fid,'yguess',[0 0 0 -1]);
     
     % write'em
-    c = c + AMPLscalarint(fid,'Np',size(avoidPairs,1)-1);
+    Np = size(avoidPairs,1);
+    c = c + AMPLscalarint(fid,'Np',Np);
     c = c + AMPLscalarint(fid,'Npold',Npold);
-    c = c + AMPLmatrixint(fid,'ap',avoidPairs);
+    % only write the list of pairs if any are enforced
+    if Np>0,
+        c = c + AMPLmatrixint(fid,'ap',avoidPairs);
+    end
     
     % update for next time
-    Npold = size(avoidPairs,1)-1;
+    Npold = size(avoidPairs,1);
     
     % completed writing file
     fclose(fid);
@@ -371,6 +373,9 @@ for iter = 1:10,
     axis equal
     view(0,90)
     
+    % conflict resolution strategy
+    confStrat = 2;
+    
     %% check for conflicts
     if any(any(conflicts)),
         
@@ -380,28 +385,39 @@ for iter = 1:10,
             error('Problem: detected conflict on a pair we have already constrained!!!')
         end
         
-        % constrain against any detected
-        avoidEnf = avoidEnf | conflicts
-        
-        % extract list of conflicting pairs
-        [newix,newjx]=find(conflicts);
-        
-        % append it to running list of pairs, maintaining bottom zero
-        avoidPairs = [avoidPairs(1:Npold,:);
-            newix newjx;
-            0 0] % always zero bottom row to avoid empty matrix
-        
-        % alternative strategy - constrain the worst
-        %                 [smin,imin] = max(sepLoss);
-        %                 [smin,jmin]=max(smin);
-        %                 imin = imin(jmin);
-        %                 avoidEnf(imin,jmin)=true
-        
-        % alternative strategy - constrain the least first
-        %                 [smin,imin] = min(sepLoss + 20*(sepLoss==0));
-        %                 [smin,jmin]=min(smin);
-        %                 imin = imin(jmin);
-        %                 avoidEnf(imin,jmin)=true
+        if confStrat==1,
+            
+            % constrain against any detected
+            avoidEnf = avoidEnf | conflicts
+            
+            % extract list of conflicting pairs
+            [newix,newjx]=find(conflicts);
+            
+            % append it to running list of pairs, maintaining bottom zero
+            avoidPairs = [avoidPairs;
+                newix newjx]
+            
+        elseif confStrat==2,
+            
+            % alternative strategy - constrain the worst
+            [smin,imin] = max(sepLoss);
+            [smin,jmin]=max(smin);
+            imin = imin(jmin);
+            avoidEnf(imin,jmin)=true;
+            avoidPairs = [avoidPairs;
+                imin jmin]
+            
+        elseif confStrat==3,
+            
+            % alternative strategy - constrain the least first
+            [smin,imin] = min(sepLoss + 20*(sepLoss==0));
+            [smin,jmin]=min(smin);
+            imin = imin(jmin);
+            avoidEnf(imin,jmin)=true;
+            avoidPairs = [avoidPairs;
+                imin jmin]
+            
+        end
         
         % update the initial guesses
         if 1>0,
