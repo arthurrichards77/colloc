@@ -12,6 +12,9 @@ fix{pp in 1..Np, e1 in 2..Ne, f1 in 1..Nf, e2 in 2..Ne, f2 in 1..Nf} ye[pp,e1,f1
 
 #fix ye;
 
+## experiment - fix the old Y values but leave new ones free
+# fix {pp in 1..Npold, e1 in 2..Ne, f1 in 1..Nf, e2 in 2..Ne, f2 in 1..Nf, ii in 1..4} ye[pp,e1,f1,e2,f2,ii];
+
 solve;
 
 # multi vehicle result files
