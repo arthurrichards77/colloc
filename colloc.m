@@ -24,7 +24,7 @@ initConfig = [0 0 0 0*pi/4;
     0  8 0 0;
     0 15 0 1*pi/4;
     0 20 0 0*pi/4;
-   10 20 0 -pi/2];
+    10 20 0 -pi/2];
 
 % final configuration
 termConfig = [20 15 0 -0*pi/4;
@@ -37,7 +37,7 @@ termConfig = [20 15 0 -0*pi/4;
 nVehs = size(initConfig,1);
 
 % or choose cut down number
-nVehs = 4;
+nVehs = 5;
 
 % and downselect
 initConfig = initConfig(1:nVehs,:);
@@ -150,6 +150,11 @@ if 1<0,
     end
 end
 
+% initialize list of pairs
+[ix,jx]=find(avoidEnf);
+avoidPairs = [ix jx;
+    0 0]; % always zero bottom row to avoid empty matrix
+
 %% %%%%%%%%%%%%%% write global AMPL file %%%%%%%%%%%%%%%%
 
 %%%%% write it to AMPL file %%%%%%
@@ -187,12 +192,16 @@ sprintf('%d bytes written',c)
 % start the conflict search loop
 for iter = 1:10,
     
-    %% %%%%%%%%%%%%%%% write local AMPL file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % re-initialize list of pairs
     
-    % search avoidance pairs
-    [ix,jx]=find(avoidEnf);
-    avoidPairs = [ix jx;
-        0 0]; % always zero bottom row to avoid empty matrix
+    % warning - doing it here could change the order and screw up the
+    % initialization of the "y" values
+    
+%     [ix,jx]=find(avoidEnf);
+%     avoidPairs = [ix jx;
+%         0 0]; % always zero bottom row to avoid empty matrix
+    
+    %% %%%%%%%%%%%%%%% write local AMPL file %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     % element start times from length times
     for aa=1:nVehs,
@@ -372,19 +381,27 @@ for iter = 1:10,
         end
         
         % constrain against any detected
-         avoidEnf = avoidEnf | conflicts
+        avoidEnf = avoidEnf | conflicts
+        
+        % extract list of conflicting pairs
+        [newix,newjx]=find(conflicts);
+        
+        % append it to running list of pairs, maintaining bottom zero
+        avoidPairs = [avoidPairs(1:Npold,:);
+            newix newjx;
+            0 0] % always zero bottom row to avoid empty matrix
         
         % alternative strategy - constrain the worst
-%                 [smin,imin] = max(sepLoss);
-%                 [smin,jmin]=max(smin);
-%                 imin = imin(jmin);
-%                 avoidEnf(imin,jmin)=true
+        %                 [smin,imin] = max(sepLoss);
+        %                 [smin,jmin]=max(smin);
+        %                 imin = imin(jmin);
+        %                 avoidEnf(imin,jmin)=true
         
         % alternative strategy - constrain the least first
-%                 [smin,imin] = min(sepLoss + 20*(sepLoss==0));
-%                 [smin,jmin]=min(smin);
-%                 imin = imin(jmin);
-%                 avoidEnf(imin,jmin)=true
+        %                 [smin,imin] = min(sepLoss + 20*(sepLoss==0));
+        %                 [smin,jmin]=min(smin);
+        %                 imin = imin(jmin);
+        %                 avoidEnf(imin,jmin)=true
         
         % update the initial guesses
         if 1>0,
