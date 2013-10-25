@@ -37,7 +37,7 @@ termConfig = [20 15 0 -0*pi/4;
 nVehs = size(initConfig,1);
 
 % or choose cut down number
-nVehs = 5;
+nVehs = 3;
 
 % and downselect
 initConfig = initConfig(1:nVehs,:);
@@ -141,8 +141,14 @@ guessTel = guessTau'*((1:nElems)-1);
 % store for previous number of pairs enforced
 Npold = 0;
 
+% conflict resolution strategy
+% confStrat = 0; % all pairs from the beginning
+% confStrat = 1; % add against any conflicts found
+confStrat = 2; % one at a time, worst first
+% confStrat = 3; % constrain one at a time, least infringing first  
+
 % comparison: all pairs in from scratch
-if 1<0,
+if confStrat==0,
     for aa=1:nVehs,
         for a2=1:(aa-1),
             avoidEnf(aa,a2) = true;
@@ -190,6 +196,10 @@ sprintf('%d bytes written',c)
 
 % start the conflict search loop
 for iter = 1:10,
+    
+    % re-setting Npold means you ignore the previous y values and use
+    % default initial guesses
+    % Npold = 0
     
     % re-initialize list of pairs
     
@@ -372,10 +382,7 @@ for iter = 1:10,
     
     axis equal
     view(0,90)
-    
-    % conflict resolution strategy
-    confStrat = 2;
-    
+        
     %% check for conflicts
     if any(any(conflicts)),
         
