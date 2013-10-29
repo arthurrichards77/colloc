@@ -39,6 +39,14 @@ nVehs = size(initConfig,1);
 % or choose cut down number
 nVehs = 3;
 
+% sense constraints - N x 2, each row [a b] implies a before b
+senseCons = [];
+senseCons = [3 1]; % example for with nVehs=3
+%senseCons = [1 3];
+
+% number of sense constraints
+nSense = size(senseCons,1);
+
 % and downselect
 initConfig = initConfig(1:nVehs,:);
 termConfig = termConfig(1:nVehs,:);
@@ -187,6 +195,11 @@ c = c + AMPLmatrix(fid,'zdf',termZdot');
 
 c = c + AMPLvector(fid,'ulo',[0.75*maxSpeed -maxTurn -maxClimb]);
 c = c + AMPLvector(fid,'uhi',[maxSpeed maxTurn maxClimb]);
+
+c = c + AMPLscalarint(fid,'Ns',nSense);
+if nSense>0,
+    c = c + AMPLmatrixint(fid,'sc',senseCons);
+end
 
 % completed writing file
 fclose(fid);

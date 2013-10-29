@@ -31,6 +31,9 @@ param tauguess{1..Na};
 param telguess{1..Na,1..Nf};
 param yguess{1..(1+Nz)};
 
+param Ns; ## number of sense constraints
+param sc{1..Ns,1..2}; ## sense constraints
+
 param Nu=3;
 param ulo{1..Nu};
 param uhi{1..Nu};
@@ -92,5 +95,8 @@ param pi = 3.14159265;
 subject to dual1{th in 1..20, pp in 1..Np, e1 in 2..Ne, f1 in 1..Nf, e2 in 2..Ne, f2 in 1..Nf}: R*(cos(2*pi*th/Nth)*ye[pp,e1,f1,e2,f2,1] + sin(2*pi*th/Nth)*ye[pp,e1,f1,e2,f2,2]) + H*ye[pp,e1,f1,e2,f2,3] <= 1;
 subject to dual2{th in 1..20, pp in 1..Np, e1 in 2..Ne, f1 in 1..Nf, e2 in 2..Ne, f2 in 1..Nf}: R*(cos(2*pi*th/Nth)*ye[pp,e1,f1,e2,f2,1] + sin(2*pi*th/Nth)*ye[pp,e1,f1,e2,f2,2]) - H*ye[pp,e1,f1,e2,f2,3] <= 1;
 
-##subject to sense{pp in 1..Np, e1 in 2..Ne, f1 in 1..Nf, e2 in 2..Ne, f2 in 1..Nf:pp==3}: ye[pp,e1,f1,e2,f2,4] <= 0;
+## **************** optional sense constraints ***********************
+
+subject to sense{cc in 1..Ns, pp in 1..Np, e1 in 2..Ne, f1 in 1..Nf, e2 in 2..Ne, f2 in 1..Nf: ap[pp,1]==sc[cc,1] and ap[pp,2]==sc[cc,2]}: ye[pp,e1,f1,e2,f2,4] <= 0;
+subject to senserev{cc in 1..Ns, pp in 1..Np, e1 in 2..Ne, f1 in 1..Nf, e2 in 2..Ne, f2 in 1..Nf: ap[pp,1]==sc[cc,2] and ap[pp,2]==sc[cc,1]}: ye[pp,e1,f1,e2,f2,4] >= 0;
 
