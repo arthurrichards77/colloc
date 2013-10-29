@@ -37,11 +37,11 @@ termConfig = [20 15 0 -0*pi/4;
 nVehs = size(initConfig,1);
 
 % or choose cut down number
-nVehs = 3;
+nVehs = 4;
 
 % sense constraints - N x 2, each row [a b] implies a before b
 senseCons = [];
-senseCons = [3 1]; % example for with nVehs=3
+%senseCons = [3 1]; % example for with nVehs=3
 %senseCons = [1 3];
 
 % number of sense constraints
