@@ -336,7 +336,7 @@ for iter = 1:10,
     
     % add the initial guess
     figure(f1)
-    plot(guessConfig(1,:),guessConfig(2,:),'mo')
+    plot(guessConfig(1,:),guessConfig(2,:),'k+')
     
     %% relative motion plot
     
